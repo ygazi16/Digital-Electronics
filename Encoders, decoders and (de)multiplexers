@@ -1,0 +1,104 @@
+SRC CODE:
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity main is
+Port ( A : in STD_LOGIC_VECTOR (3 downto 0);
+B : out STD_LOGIC_VECTOR (1 downto 0);
+
+C : out STD_LOGIC_VECTOR (3 downto 0);
+
+D : in STD_LOGIC_VECTOR (1 downto 0);
+S : in STD_LOGIC_VECTOR (1 downto 0);
+I : in STD_LOGIC_VECTOR (3 downto 0);
+dmI: in STD_LOGIC;
+mY: out STD_LOGIC;
+Y : out STD_LOGIC_VECTOR (3 downto 0);
+
+Switch : in STD_LOGIC_VECTOR (1 downto 0)
+);
+
+end main;
+architecture Behavioral of main is
+
+begin
+process(Switch)
+begin
+
+if ((Switch(1) = &#39;0&#39;) and (Switch(0) = &#39;0&#39;)) then --ENCODER
+
+B(1) &lt;= (A(3) or A(2));
+B(0) &lt;= (A(3) or A(1));
+
+elsif ((Switch(1) = &#39;0&#39;) and (Switch(0) = &#39;1&#39;)) then --DECODER
+
+C(0) &lt;= (not D(1) and not D(0));
+C(1) &lt;= (not D(1) and D(0));
+C(2) &lt;= ( D(1) and not D(0));
+C(3) &lt;= ( D(1) and D(0));
+
+elsif ((Switch(1) = &#39;1&#39;) and (Switch(0) = &#39;0&#39;)) then --MULTIPLEXER
+
+mY &lt;= ((not S(1) and not S(0) and I(0)) or (not S(1) and S(0) and I(1))
+or ( S(1) and not S(0) and I(2)) or ( S(1) and S(0) and I(3)));
+
+else --DEMULTIPLEXER
+
+Y(0) &lt;= (not S(0) and not S(1) and dmI);
+Y(1) &lt;= (S(0) and not S(1) and dmI);
+Y(2) &lt;= (S(1) and not S(0) and dmI);
+Y(3) &lt;= (S(1) and S(0) and dmI);
+
+end if;
+end process;
+
+end Behavioral;
+
+UCF PART(WHERE GATES ARE MATCHED WITH LED BUTTTONS ON THE BOARD)
+
+//SWITCH
+net Switch(1) loc = &quot;P78&quot;;
+net Switch(0) loc = &quot;P82&quot;;
+
+net &quot;Switch&lt;0&gt;&quot; CLOCK_DEDICATED_ROUTE = FALSE;
+
+#
+#//ENCODER
+#net A(3) loc = &quot;P4&quot;;
+#net A(2) loc = &quot;P5&quot;;
+#net A(1) loc = &quot;P12&quot;;
+#net A(0) loc = &quot;P15&quot;;
+#
+#net B(1) loc = &quot;P13&quot;;
+#net B(0) loc = &quot;P16&quot;;
+
+#//DECODER
+#net D(1) loc = &quot;P12&quot;;
+#net D(0) loc = &quot;P15&quot;;
+#
+#net C(3) loc = &quot;P3&quot;;
+#net C(2) loc = &quot;P6&quot;;
+#net C(1) loc = &quot;P13&quot;;
+#net C(0) loc = &quot;P16&quot;;
+
+#//MULTIPLEXER
+#net S(1) loc = &quot;P12&quot;;
+#net S(0) loc = &quot;P15&quot;;
+#
+#net I(3) loc = &quot;P90&quot;;
+
+#net I(2) loc = &quot;P94&quot;;
+#net I(1) loc = &quot;P4&quot;;
+#net I(0) loc = &quot;P5&quot;;
+#
+#net mY loc = &quot;P16&quot;;
+#
+#//DEMULTIPLEXER
+net S(1) loc = &quot;P12&quot;;
+net S(0) loc = &quot;P15&quot;;
+
+net Y(3) loc = &quot;P3&quot;;
+net Y(2) loc = &quot;P6&quot;;
+net Y(1) loc = &quot;P13&quot;;
+net Y(0) loc = &quot;P16&quot;;
+
+net dmI loc = &quot;P85&quot;;
