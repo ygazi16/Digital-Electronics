@@ -1,0 +1,366 @@
+Appendix 1. Lab source code
+adder.vhdl:
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity adder is
+Port ( A : in STD_LOGIC;
+B : in STD_LOGIC;
+oldCarry : in STD_LOGIC;
+newCarry : out STD_LOGIC;
+NumberBit : out STD_LOGIC;
+
+S : in STD_LOGIC_VECTOR (1 downto 0);
+AG : in STD_LOGIC;
+BG : in STD_LOGIC;
+negativeSign : out STD_LOGIC;
+C : in std_logic);
+
+end adder;
+architecture Behavioral of adder is
+begin
+process(S,A,B,oldCarry,AG,BG,C)
+begin
+if (S=&quot;00&quot;) then
+NumberBit&lt;=A xor &#39;0&#39; xor oldCarry;
+newCarry&lt;=(A and &#39;0&#39;) or (A and oldCarry) or (&#39;0&#39; and oldCarry);
+negativeSign&lt;=&#39;0&#39;;
+elsif (S=&quot;01&quot;) then
+NumberBit&lt;=A xor B xor oldCarry;
+newCarry&lt;=(A and B) or (A and oldCarry) or (B and oldCarry);
+negativeSign&lt;=&#39;0&#39;;
+elsif (S=&quot;10&quot;) then
+if (C=&#39;0&#39;) then
+NumberBit&lt;=A xor (not B) xor oldCarry;
+newCarry&lt;=(A and (not B)) or (A and oldCarry) or ((not B) and oldCarry);
+negativeSign&lt;= &#39;0&#39;;
+else
+if(BG=&#39;1&#39;) then
+NumberBit&lt;=(not A) xor B xor oldCarry;
+newCarry&lt;=((not A) and B) or ((not A) and oldCarry) or (B and oldCarry);
+negativeSign&lt;= &#39;1&#39;;
+else
+
+NumberBit&lt;=A xor (not B) xor oldCarry;
+newCarry&lt;=(A and (not B)) or (A and oldCarry) or ((not B) and oldCarry);
+negativeSign&lt;= &#39;0&#39;;
+end if;
+end if;
+else
+if (C=&#39;0&#39;) then
+NumberBit&lt;=(not A) xor B xor oldCarry;
+newCarry&lt;=((not A) and B) or ((not A) and oldCarry) or (B and oldCarry);
+negativeSign&lt;= &#39;0&#39;;
+else
+if(AG=&#39;1&#39;) then
+NumberBit&lt;=A xor (not B) xor oldCarry;
+newCarry&lt;=(A and (not B)) or (A and oldCarry) or ((not B) and oldCarry);
+negativeSign&lt;= &#39;1&#39;;
+else
+NumberBit&lt;=(not A) xor B xor oldCarry;
+newCarry&lt;=((not A) and B) or ((not A) and oldCarry) or (B and oldCarry);
+negativeSign&lt;= &#39;0&#39;;
+end if;
+end if;
+end if;
+end process;
+end Behavioral;
+logic.vhdl:
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity logic is
+Port ( A : in STD_LOGIC;
+B : in STD_LOGIC;
+Output : out STD_LOGIC;
+S : in STD_LOGIC_VECTOR (1 downto 0));
+end logic;
+architecture Behavioral of logic is
+begin
+process(A,B,S)
+begin
+if (S=&quot;00&quot;) then
+Output&lt;=A and B;
+elsif (S=&quot;01&quot;)then
+Output&lt;=A or B;
+elsif (S=&quot;10&quot;)then
+Output&lt;=A xor B;
+else
+Output&lt;=A xnor B;
+end if;
+end process;
+end Behavioral;
+
+comparator.vhdl:
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity comparator is
+Port ( A : in STD_LOGIC_VECTOR (3 downto 0);
+B : in STD_LOGIC_VECTOR (3 downto 0);
+AG : out STD_LOGIC;
+BG : out STD_LOGIC);
+end comparator;
+architecture Behavioral of comparator is
+signal x1,x2,x3 : std_logic ;
+begin
+x1 &lt;= ( A(1) and B(1)) or ( (not A(1)) and (not B(1))) ;
+x2 &lt;= ( A(2) and B(2)) or ( (not A(2)) and (not B(2))) ;
+x3 &lt;= ( A(3) and B(3)) or ( (not A(3)) and (not B(3))) ;
+AG &lt;= (A(3) and (not B(3))) or (x3 and A(2) and (not B(2))) or ( x3 and x2 and A(1) and (not B(1))) or (x3 and x2 and x1 and A(0)
+and ( not B(0)));
+BG &lt;= (B(3) and (not A(3))) or (x3 and B(2) and (not A(2))) or ( x3 and x2 and B(1) and (not A(1))) or (x3 and x2 and x1 and B(0)
+and ( not A(0)));
+end Behavioral;
+
+main.vhdl:
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity main is
+Port ( A : in STD_LOGIC_VECTOR (3 downto 0);
+B : in STD_LOGIC_VECTOR (3 downto 0);
+S : in STD_LOGIC_VECTOR (1 downto 0);
+M : in STD_LOGIC;
+Cin : in STD_LOGIC;
+
+Cout: out STD_LOGIC;
+clk : IN std_logic;
+SevenSegControl : OUT std_logic_vector(7 downto 0):=x&quot;ff&quot;;
+SevenSegBus : OUT std_logic_vector(7 downto 0);
+
+L : out STD_LOGIC_VECTOR (3 downto 0):=x&quot;0&quot;);
+end main;
+architecture Behavioral of main is
+COMPONENT sevenSegment
+PORT(
+A : IN std_logic_vector(3 downto 0);
+B : IN std_logic_vector(3 downto 0);
+C : IN std_logic_vector(3 downto 0);
+D : IN std_logic_vector(3 downto 0);
+E : IN std_logic_vector(3 downto 0);
+F : IN std_logic_vector(3 downto 0);
+G : IN std_logic_vector(3 downto 0);
+H : IN std_logic_vector(3 downto 0);
+clk : IN std_logic;
+SevenSegControl : OUT std_logic_vector(7 downto 0);
+SevenSegBus : OUT std_logic_vector(7 downto 0)
+);
+END COMPONENT;
+COMPONENT adder
+PORT(
+A : IN std_logic;
+B : IN std_logic;
+oldCarry : IN std_logic;
+S : IN std_logic_vector(1 downto 0);
+AG : IN std_logic;
+
+BG : IN std_logic;
+newCarry : OUT std_logic;
+NumberBit : OUT std_logic;
+negativeSign : OUT std_logic;
+C : IN std_logic
+);
+END COMPONENT;
+COMPONENT logic
+PORT(
+A : IN std_logic;
+B : IN std_logic;
+S : IN std_logic_vector(1 downto 0);
+L : OUT std_logic
+);
+END COMPONENT;
+COMPONENT comparator
+PORT(
+A : IN std_logic_vector(3 downto 0);
+B : IN std_logic_vector(3 downto 0);
+AG : OUT std_logic;
+BG : OUT std_logic
+);
+END COMPONENT;
+signal c0,c1,c2,c3,cstatic: std_logic;
+signal AG,BG: std_logic;
+signal logicLed,result,negativeSign,sevenSegmentResult,sevenSegmentNegativeSign: std_logic_vector (3 downto 0);
+begin
+Inst_comparator: comparator PORT MAP(
+A =&gt; A,
+B =&gt; B,
+AG =&gt; AG,
+BG =&gt; BG
+);
+c0&lt;=Cin;
+cstatic&lt;=Cin;
+Inst_adder1: adder PORT MAP(
+A =&gt;A(0) ,
+B =&gt;B(0) ,
+
+oldCarry =&gt;c0 ,
+newCarry =&gt;c1,
+NumberBit =&gt;result(0) ,
+S =&gt;S,
+AG =&gt; AG,
+BG =&gt; BG,
+negativeSign =&gt; negativeSign(0),
+C =&gt; C
+);
+Inst_adder2: adder PORT MAP(
+A =&gt;A(1) ,
+B =&gt;B(1) ,
+oldCarry =&gt;c1 ,
+newCarry =&gt;c2,
+NumberBit =&gt;result(1) ,
+S =&gt;S,
+AG =&gt; AG,
+BG =&gt; BG,
+negativeSign =&gt; negativeSign(1),
+C =&gt; C
+);
+Inst_adder3: adder PORT MAP(
+A =&gt;A(2) ,
+B =&gt;B(2) ,
+oldCarry =&gt;c2 ,
+newCarry =&gt;c3,
+NumberBit =&gt;result(2) ,
+S =&gt;S,
+AG =&gt; AG,
+BG =&gt; BG,
+negativeSign =&gt; negativeSign(2),
+C =&gt; C
+);
+Inst_adder4: adder PORT MAP(
+A =&gt;A(3) ,
+B =&gt;B(3) ,
+oldCarry =&gt;c3 ,
+newCarry =&gt;Cout,
+
+NumberBit =&gt;result(3) ,
+S =&gt;S,
+AG =&gt; AG,
+BG =&gt; BG,
+negativeSign =&gt; negativeSign(3),
+C =&gt; C
+);
+Inst_logic1: logic PORT MAP(
+A =&gt;A(0) ,
+B =&gt;B(0) ,
+L =&gt;logicLed(0) ,
+S =&gt;S
+);
+Inst_logic2: logic PORT MAP(
+A =&gt;A(1) ,
+B =&gt;B(1) ,
+L =&gt;logicLed(1) ,
+S =&gt;S
+);
+Inst_logic3: logic PORT MAP(
+A =&gt;A(2) ,
+B =&gt;B(2) ,
+L =&gt;logicLed(2) ,
+S =&gt;S
+);
+Inst_logic4: logic PORT MAP(
+A =&gt;A(3) ,
+B =&gt;B(3) ,
+L =&gt;logicLed(3) ,
+S =&gt;S
+);
+process(logicLed,M,result,negativeSign)
+begin
+if (M=&#39;0&#39;) then
+sevenSegmentResult&lt;=x&quot;c&quot;;
+sevenSegmentNegativeSign&lt;=x&quot;c&quot;;
+L&lt;=logicLed;
+else
+
+L&lt;=&quot;0000&quot;;
+sevenSegmentResult&lt;=result;
+if (negativeSign=&quot;1111&quot;) then
+sevenSegmentNegativeSign&lt;=x&quot;a&quot;;
+else
+sevenSegmentNegativeSign&lt;=x&quot;c&quot;;
+end if;
+end if;
+end process;
+Inst_sevenSegment: sevenSegment PORT MAP(
+A =&gt;sevenSegmentResult ,
+B =&gt;sevenSegmentNegativeSign ,
+C =&gt;x&quot;c&quot; ,
+D =&gt;x&quot;c&quot; ,
+E =&gt;x&quot;c&quot; ,
+F =&gt;x&quot;c&quot; ,
+G =&gt;x&quot;c&quot; ,
+H =&gt;x&quot;c&quot; ,
+clk =&gt; clk ,
+SevenSegControl =&gt;SevenSegControl ,
+SevenSegBus =&gt;SevenSegBus
+);
+end Behavioral;
+
+main.ucf:
+NET &quot;SevenSegcontrol[0]&quot; LOC = P50;
+NET &quot;SevenSegcontrol[1]&quot; LOC = P49;
+NET &quot;SevenSegcontrol[2]&quot; LOC = P52;
+NET &quot;SevenSegcontrol[3]&quot; LOC = P56;
+NET &quot;SevenSegcontrol[4]&quot; LOC = P59;
+NET &quot;SevenSegcontrol[5]&quot; LOC = P57;
+NET &quot;SevenSegcontrol[6]&quot; LOC = P60;
+NET &quot;SevenSegcontrol[7]&quot; LOC = P61;
+
+NET &quot;SevenSegbus[7]&quot; LOC = P71;
+NET &quot;SevenSegbus[6]&quot; LOC = P62;
+NET &quot;SevenSegbus[5]&quot; LOC = P65;
+NET &quot;SevenSegbus[4]&quot; LOC = P72;
+
+NET &quot;SevenSegbus[3]&quot; LOC = P73;
+NET &quot;SevenSegbus[2]&quot; LOC = P98;
+NET &quot;SevenSegbus[1]&quot; LOC = P64;
+NET &quot;SevenSegbus[0]&quot; LOC = P70;
+
+NET &quot;clk&quot; LOC = P40;
+
+NET &quot;A[0]&quot; LOC = P94;
+NET &quot;A[1]&quot; LOC = P90;
+NET &quot;A[2]&quot; LOC = P88;
+NET &quot;A[3]&quot; LOC = P85;
+
+NET &quot;B[0]&quot; LOC = P15;
+NET &quot;B[1]&quot; LOC = P12;
+NET &quot;B[2]&quot; LOC = P5;
+NET &quot;B[3]&quot; LOC = P4;
+
+NET &quot;S[0]&quot; LOC = P34;
+NET &quot;S[1]&quot; LOC = P35;
+
+NET &quot;M&quot; LOC = P78;
+NET &quot;Cin&quot; LOC = P82;
+NET &quot;Cout&quot; LOC = P77;
+
+NET &quot;L[0]&quot; LOC = P16;
+NET &quot;L[1]&quot; LOC = P13;
+NET &quot;L[2]&quot; LOC = P6;
+NET &quot;L[3]&quot; LOC = P3;
