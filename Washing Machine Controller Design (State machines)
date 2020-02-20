@@ -1,0 +1,174 @@
+Main.vhdl
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use ieee.numeric_std.all;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity main is
+    port ( 
+            masterClock : in std_logic;
+            stateLed : out std_logic_vector (1 downto 0);
+            offLed : out std_logic_vector (1 downto 0);
+            modLed : out std_logic_vector (3 downto 0);
+            resetButton : in std_logic;
+            startButton : in std_logic
+            );
+end main;
+
+architecture Behavioral of main is
+
+COMPONENT slowerClock
+PORT(
+    masterClock : IN std_logic;          
+    slowClock : OUT std_logic
+    );
+END COMPONENT;
+
+signal slowClock: std_logic;
+signal state: std_logic_vector(1 downto 0) :="00";
+signal stateLedSignal : std_logic_vector(1 downto 0):="11";
+signal modLedSignal : std_logic_vector(3 downto 0) :="1000";
+signal offLedSignal : std_logic_vector(1 downto 0) :="00";
+signal startFlag : std_logic:= '0';
+signal counter : std_logic_vector (3 downto 0):="0000";
+
+constant second : std_logic_vector(3 downto 0):= "0001";
+
+
+begin
+
+Inst_slowerClock: slowerClock PORT MAP(
+    masterClock => masterClock ,
+    slowClock => slowClock
+);
+
+process(masterClock)
+begin
+
+        modLed <= modLedSignal;
+        offLed <=   offLedSignal;
+        stateLed <= stateLedSignal;
+        
+        if(startButton = '1') then 
+            startFlag <= '1';
+        end if;
+        
+        if(startFlag = '1') then
+            if(state = "00") then
+                stateLedSignal <="00";
+                modLedSignal <= "0001";
+                offLedSignal <= "10";
+            elsif(state = "01") then
+                modLedSignal <= "0010";
+                offLedSignal <= "10";
+                stateLedSignal <="01";
+            elsif(state ="10") then
+                modLedSignal <= "0100";
+                offLedSignal <= "10";
+                stateLedSignal <="10";
+            else
+                modLedSignal <= "1000";
+                offLedSignal <= "01";
+                stateLedSignal <="11";
+           end if;  
+        end if;
+        
+        if(resetButton = '1') then
+            startFlag <= '0';
+            modLedSignal <= "1000";
+            offLedSignal <= "00";
+            stateLedSignal <= "11";
+        end if;
+end process;
+
+
+finite_state: process(slowClock)
+begin
+    if rising_edge(slowClock) then
+
+        if(startFlag = '1') then
+            
+            if(state = "00") then
+                counter <= std_logic_vector(unsigned(counter) + unsigned(second));
+                if(counter = "0011") then
+                    state <="01";
+                end if;
+            elsif(state = "01") then
+                counter <= std_logic_vector(unsigned(counter) + unsigned(second));
+                if(counter = "0110") then
+                    state <="10";
+                end if; 
+            elsif(state ="10") then
+                counter <= std_logic_vector(unsigned(counter) + unsigned(second));
+                if(counter = "1000") then
+                    state <="11";
+                end if;
+                
+           end if;  
+        else 
+            state <= "00";
+            counter <= "0000";
+       end if;
+     end if;
+
+end process;     
+            
+        
+
+end Behavioral;
+
+
+
+slowerClock.vhdl
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_unsigned.all;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity slowerClock is
+    port (
+            masterClock: in std_logic;
+            slowClock: out  std_logic
+            );
+end slowerClock;
+
+architecture Behavioral of slowerClock is
+
+signal clkCounter : std_logic_vector(27 downto 0):= x"0000000";
+signal temp : std_logic :='0';
+
+begin
+Process_masterClock: process(masterClock)
+begin
+    if(rising_edge(masterClock)) then 
+        clkCounter <= clkCounter + 1;
+        if(clkCounter < x"5f5e100") then
+            temp <= '1';
+        else
+            clkCounter <= x"0000000";
+            temp <='0';
+         end if;
+     end if;
+end process;
+slowClock <= temp;
+
+end Behavioral;
+
