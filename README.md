@@ -1,3 +1,3 @@
 # Digital-Electronics
-It includes the projects that has been done in the ELEC204 class.
+It includes the projects that have been done in the ELEC204 class.
 
